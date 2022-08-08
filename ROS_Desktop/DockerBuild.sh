@@ -6,17 +6,23 @@ IMG_TAG="latest"
 CTNR_NAME="ros_ctnr"
 CTNR_BASE_DIR="/app"
 
-while getopts "t:br:e" opt
+while getopts "t:b:r:e" opt
 do
   case $opt in
     t)
         IMG_TAG="$OPTARG"
         ;;
     b) 
+        if [ "$OPTARG" == "n" ]
+        then
+            CACHE="--no-cache"
+        else
+            CACHE=""
+        fi
         START="$(TZ=UTC0 printf '%(%s)T\n' '-1')" # `-1`  is the current time
         
         docker rmi $IMG_NAME
-        docker build --no-cache -t $IMG_NAME .
+        docker build $CACHE -t $IMG_NAME .
         
         # Pring elapsed time
         ELAPSED=$(( $(TZ=UTC0 printf '%(%s)T\n' '-1') - START ))
@@ -31,13 +37,17 @@ do
         fi
         # Enable tracing
         set -x
-        sudo docker run --privileged \
-                $RM \
-                -it \
-                --name $CTNR_NAME \
-                # --mount type=volume,src="",dst="" \
-                # --mount type=bind,src="",dst="" \
-                "$IMG_NAME:$IMG_TAG"
+        # --mount type=volume,src="",dst="" \
+        # --mount type=bind,src="",dst="" \
+        sudo xhost +local:root
+        docker run $RM -it --init \
+            --ipc=host \
+            --user="$(id -u):$(id -g)" \
+            -e "DISPLAY" \
+            --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
+            --volume="$PWD:/app" \
+            --name $CTNR_NAME \
+            "$IMG_NAME:$IMG_TAG"
         # Disable tracing
         set +x        
         ;;

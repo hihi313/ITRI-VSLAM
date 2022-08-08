@@ -1,16 +1,15 @@
-FROM ubuntu:20.04
+FROM osrf/ros:noetic-desktop-full
 
-# Defualt user of anibali/pytorch
+ENV TZ=Etc/UTC
+ARG DEBIAN_FRONTEND=noninteractive
 ARG ROOT_PWD=root
+
+WORKDIR /app
 
 USER root
 # Set root password
 RUN echo 'root:${ROOT_PWD}' | chpasswd
-# Replace to latest ORB_SLAM3 code by mount host volume
-RUN rm -rf /dpds/ORB_SLAM3
-
-# Install 
-# glxgears: to test X display
-RUN apt-get install mesa-utils gdb
+RUN apt update \
+    && apt install -y --no-install-recommends \
 
 CMD bash 
