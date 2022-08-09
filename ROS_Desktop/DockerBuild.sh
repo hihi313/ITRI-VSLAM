@@ -39,10 +39,10 @@ do
         set -x
         # --mount type=volume,src="",dst="" \
         # --mount type=bind,src="",dst="" \
+        # --user="$(id -u):$(id -g)" \
         sudo xhost +local:root
         docker run $RM -it --init \
             --ipc=host \
-            --user="$(id -u):$(id -g)" \
             -e "DISPLAY" \
             --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
             --volume="$PWD:/app" \
@@ -52,7 +52,11 @@ do
         set +x        
         ;;
     e)
-        docker exec -it --user=root $CTNR_NAME bash
+        # Enable tracing
+        set -x
+        docker exec -it $CTNR_NAME bash
+        # Disable tracing
+        set +x        
         ;;
     \?) 
         echo "Invalid option -$OPTARG" >&2
