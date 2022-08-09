@@ -26,7 +26,7 @@ RUN cd \
     && cd build \
     && echo $PWD \
     && cmake .. \
-    && make \
+    && make -j$(nproc)\
     && make install
 
 # Set env
