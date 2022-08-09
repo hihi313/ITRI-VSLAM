@@ -1,14 +1,17 @@
 #!/bin/bash
 
 echo "Sart time=$(date +"%T")"
-IMG_NAME="my_ros"
+IMG_NAME="ros-ceres"
 IMG_TAG="latest"
 CTNR_NAME="ros_ctnr"
 CTNR_BASE_DIR="/app"
 
-while getopts "t:b:r:e" opt
+while getopts "i:t:b:r:e" opt
 do
   case $opt in
+    i)
+        IMG_NAME="$OPTARG"
+        ;;
     t)
         IMG_TAG="$OPTARG"
         ;;
