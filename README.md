@@ -1,4 +1,4 @@
-Dockerfiles for ITRI VSLAM project
+Workspace set up for ITRI VSLAM project
 
 # Camera calibration
 
