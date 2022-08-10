@@ -14,6 +14,7 @@ def get_K_and_D(checkerboard, imgsPath,l):
     objpoints = []
     imgpoints = []
     images = glob.glob(imgsPath + "/*.jpg")
+    print(f"#images: {len(images)}")
     for fname in images:
         img = cv2.imread(fname)
         if _img_shape == None:
@@ -69,9 +70,9 @@ def undistort(img_path,K,D,DIM,scale=0.6,imshow=False):
 l=34 #方格長度 單位mm
 checkerboard=(6,9)#棋盤格格點數目
 #------------------
-DIM, K, D =get_K_and_D(checkerboard,"./圖片",l)
+DIM, K, D =get_K_and_D(checkerboard,"./images",l)
 
 #驗證
-#img = undistort('./圖片/4.jpg',K,D,DIM)
+#img = undistort('./images/4.jpg',K,D,DIM)
 #cv2.imwrite('./01.jpg', img)
 
