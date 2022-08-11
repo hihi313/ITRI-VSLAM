@@ -33,8 +33,7 @@ Workspace set up for ITRI VSLAM project
 # Camera & IMU calibration
 
 > Can use [kalibr][6] repo to build docker image
-
-> Pre-built [image][7]
+> > Or use the pre-built [image][7]
 
 [1]: https://hub.docker.com/r/hihi313/ros-ceres (ros-ceres:latest)
 [2]: https://github.com/hihi313/code_utils.git

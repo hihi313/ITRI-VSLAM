@@ -643,4 +643,5 @@ FodyWeavers.xsd
 
 # End of https://www.toptal.com/developers/gitignore/api/linux,macos,windows,visualstudio,visualstudiocode,c++,c,cmake,ros,ros2
 
-*_calibration/images/*
+camera/calibration/images/*
+*.bag
