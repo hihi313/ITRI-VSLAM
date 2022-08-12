@@ -37,9 +37,17 @@ Workspace set up for ITRI VSLAM project
 
 # Dockerfiles
 
-## ros-kalibr
+## [ros-ceres][1]
 
-I build the image using official [GitHub][6] Dockerfile & it seems it need to **patch with `apt install python3-pyx`**
+Base on ROS official [image][9] & install ceres
+
+## [ros-kalibr][7]
+
+I build the image using official Dockerfile([GitHub repo][6]) & it seems it need to **patch with `apt install python3-pyx`**
+
+## [ros-kalibr-ceres][8]
+
+Install ceres base on image [ros-kalibr][7] & patched
 
 [1]: https://hub.docker.com/r/hihi313/ros-ceres (ros-ceres:latest)
 [2]: https://github.com/hihi313/code_utils.git
@@ -47,4 +55,6 @@ I build the image using official [GitHub][6] Dockerfile & it seems it need to **
 [4]: https://github.com/gaowenliang/imu_utils.git
 [5]: https://hub.docker.com/layers/ros-ceres/hihi313/ros-ceres/built/images/sha256-c27d7ae53e86c685837ce1feb675dc92d28907bdbaa8c742e1abcefa34ae55e6?context=explore (ros-ceres:built)
 [6]: https://github.com/ethz-asl/kalibr.git
-[7]: https://hub.docker.com/r/hihi313/kalibr (kalibr:latest)
+[7]: https://hub.docker.com/r/hihi313/ros-kalibr (ros-kalibr:latest)
+[8]: https://hub.docker.com/r/hihi313/ros-kalibr-ceres (ros-kalibr-ceres:latest)
+[9]: https://hub.docker.com/layers/ros/osrf/ros/noetic-desktop-full/images/sha256-b0e772092316d5d2bc40be71f3fca9a79f07ad38d4a52e342558202aa3b2057f?context=explore (osrf/ros:noetic-desktop-full)
