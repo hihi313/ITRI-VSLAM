@@ -1,4 +1,4 @@
-FROM hihi313/kalibr
+FROM hihi313/ros-kalibr
 
 ENV TZ=Etc/UTC
 ARG DEBIAN_FRONTEND=noninteractive
