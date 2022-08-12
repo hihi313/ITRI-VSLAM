@@ -32,4 +32,8 @@ RUN cd \
 # Set env
 RUN echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc
 
+# Clean up
+RUN apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
 CMD bash 

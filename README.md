@@ -37,6 +37,8 @@ Workspace set up for ITRI VSLAM project
 
 # Dockerfiles
 
+All `built` tags mean `code_utils` & `imu_utils` are pre-built in the image
+
 ## [ros-ceres][1]
 
 Base on ROS official [image][9] & install ceres
