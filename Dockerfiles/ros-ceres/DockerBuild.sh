@@ -1,10 +1,11 @@
 #!/bin/bash
 
 echo "Sart time=$(date +"%T")"
-IMG_NAME="hihi313/ros-ceres"
+
+IMG_NAME="ros-ceres"
 IMG_TAG="latest"
-CTNR_NAME="ros_ctnr"
-CTNR_BASE_DIR="/app"
+CTNR_NAME="${IMG_NAME}_ctnr"
+WORKDIR="/app" # Should be the same as Dockerfile
 
 while getopts "i:t:b:r:e" opt
 do

@@ -35,6 +35,12 @@ Workspace set up for ITRI VSLAM project
 > Can use [kalibr][6] repo to build docker image
 > > Or use the pre-built [image][7]
 
+# Dockerfiles
+
+## ros-kalibr
+
+I build the image using official [GitHub][6] Dockerfile & it seems it need to **patch with `apt install python3-pyx`**
+
 [1]: https://hub.docker.com/r/hihi313/ros-ceres (ros-ceres:latest)
 [2]: https://github.com/hihi313/code_utils.git
 [3]: https://github.com/gaowenliang/code_utils
