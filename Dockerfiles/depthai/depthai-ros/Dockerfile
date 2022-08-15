@@ -1,3 +1,7 @@
+###############################################################################
+# depthai-ros has too many error when install in docker 
+# need to solve these error later
+###############################################################################
 FROM hihi313/ros-kalibr-ceres
 
 ENV TZ=Etc/UTC
