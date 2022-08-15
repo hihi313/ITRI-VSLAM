@@ -11,13 +11,14 @@ USER root
 
 # Install dependencies
 # Kalibr's dockerfile has install wget
-RUN sudo wget -qO- ${DEPTHAI_SETUP_SCRIPT} | sudo bash
+RUN wget -qO- ${DEPTHAI_SETUP_SCRIPT} | sudo bash
 # Setup depthai-ros
 RUN mkdir -p src \
     && cd src \
     # Kalibr's dockerfile has installed git
-    && git clone ${DEPTHAI_REPO} \
-    && cd .. \
+    && git clone ${DEPTHAI_REPO}
+# Back to WORKDIR
+RUN apt update \
     && rosdep install --from-paths src --ignore-src -r -y \
     # Kalibr's dockerfile has set ROS's environment variable
     && catkin_make -j$(nproc) \
