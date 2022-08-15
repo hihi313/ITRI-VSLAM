@@ -13,7 +13,7 @@ USER root
 # Kalibr's dockerfile has install wget
 RUN wget -qO- ${DEPTHAI_SETUP_SCRIPT} | sudo bash
 # Setup depthai-ros
-RUN mkdir src \
+RUN mkdir -p src \
     && wget ${DEPTHAI_REPO} \
     && vcs import src < underlay.repos \
     && rosdep install --from-paths src --ignore-src -r -y \
