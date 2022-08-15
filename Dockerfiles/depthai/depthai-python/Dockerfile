@@ -6,6 +6,7 @@ ARG DEPTHAI_URL=https://docs.luxonis.com
 ARG DEPTHAI_SETUP_SCIRPT=install_dependencies.sh
 
 WORKDIR /catkin_ws
+SHELL ["/bin/bash", "-c"]
 
 USER root
 
@@ -19,5 +20,8 @@ RUN python3 -m pip install depthai
 # Clean up
 RUN apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+ENTRYPOINT echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc \
+    && source ~/.bashrc
     
 CMD bash 
