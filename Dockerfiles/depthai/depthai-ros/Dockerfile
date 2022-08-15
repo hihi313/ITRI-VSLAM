@@ -6,9 +6,9 @@ ARG DEPTHAI_SETUP_SCRIPT=https://raw.githubusercontent.com/luxonis/depthai-ros/m
 ARG DEPTHAI_REPO=https://github.com/luxonis/depthai-ros.git
 
 WORKDIR /catkin_ws
+SHELL ["/bin/bash", "-c"]
 
 USER root
-
 # Install dependencies
 # Kalibr's dockerfile has install wget
 RUN wget -qO- ${DEPTHAI_SETUP_SCRIPT} | sudo bash
@@ -20,12 +20,15 @@ RUN mkdir -p src \
 # Back to WORKDIR
 RUN apt update \
     && rosdep install --from-paths src --ignore-src -r -y \
-    # Kalibr's dockerfile has set ROS's environment variable
+    && source /opt/ros/noetic/setup.bash \
     && catkin_make -j$(nproc) \
     && source devel/setup.bash
 
 # Clean up
 RUN apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+ENTRYPOINT echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc \
+    && source ~/.bashrc
     
 CMD bash 
