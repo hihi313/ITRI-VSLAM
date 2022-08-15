@@ -21,7 +21,7 @@ RUN python3 -m pip install depthai
 RUN apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-ENTRYPOINT echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc \
-    && source ~/.bashrc
+# ENTRYPOINT echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc \
+#     && source ~/.bashrc
     
 CMD bash 
