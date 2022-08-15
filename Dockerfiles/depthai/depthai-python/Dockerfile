@@ -1,12 +1,12 @@
 FROM hihi313/ros-kalibr-ceres
 
+ENV ROS_DISTRO=noetic
 ENV TZ=Etc/UTC
 ARG DEBIAN_FRONTEND=noninteractive
 ARG DEPTHAI_URL=https://docs.luxonis.com
 ARG DEPTHAI_SETUP_SCIRPT=install_dependencies.sh
 
 WORKDIR /catkin_ws
-SHELL ["/bin/bash", "-c"]
 
 USER root
 
@@ -21,7 +21,8 @@ RUN python3 -m pip install depthai
 RUN apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# ENTRYPOINT echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc \
-#     && source ~/.bashrc
+# Setup environment variable
+COPY ./ros_entrypoint.sh /
+ENTRYPOINT ["/ros_entrypoint.sh"]
     
 CMD bash 
