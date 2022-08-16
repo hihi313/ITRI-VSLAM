@@ -1,7 +1,3 @@
-###############################################################################
-# depthai-ros has too many error when install in docker 
-# need to solve these error later
-###############################################################################
 FROM hihi313/ros-kalibr-ceres
 
 ENV TZ=Etc/UTC
@@ -13,6 +9,7 @@ SHELL ["/bin/bash", "-c"]
 USER root
 # Add USB rules
 RUN echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="03e7", MODE="0666"' | tee /etc/udev/rules.d/80-movidius.rules 
+RUN /lib/systemd/systemd-udevd --daemon
 RUN udevadm control --reload-rules && udevadm trigger
 # Install
 RUN apt update \
@@ -22,8 +19,8 @@ RUN apt update \
 RUN apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Set environment
-ENTRYPOINT echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc \
-    && source ~/.bashrc
+# Setup environment variable
+COPY ./ros_entrypoint.sh /
+ENTRYPOINT ["/ros_entrypoint.sh"]
     
 CMD bash 
