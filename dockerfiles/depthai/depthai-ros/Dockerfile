@@ -9,11 +9,12 @@ SHELL ["/bin/bash", "-c"]
 USER root
 # Add USB rules
 RUN echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="03e7", MODE="0666"' | tee /etc/udev/rules.d/80-movidius.rules 
-RUN /lib/systemd/systemd-udevd --daemon
-RUN udevadm control --reload-rules && udevadm trigger
+RUN /lib/systemd/systemd-udevd --daemon \
+    && udevadm control --reload-rules && udevadm trigger
 # Install
 RUN apt update \
-    && apt install ros-noetic-depthai-ros
+    && apt install  -y --no-install-recommends \
+    ros-noetic-depthai-ros
 
 # Clean up
 RUN apt-get clean \
