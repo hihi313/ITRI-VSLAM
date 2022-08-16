@@ -1,7 +1,5 @@
 FROM hihi313/ros-kalibr-ceres
 
-ENV ROS_DISTRO=noetic
-ENV TZ=Etc/UTC
 ARG DEBIAN_FRONTEND=noninteractive
 ARG DEPTHAI_URL=https://docs.luxonis.com
 ARG DEPTHAI_SETUP_SCIRPT=install_dependencies.sh
