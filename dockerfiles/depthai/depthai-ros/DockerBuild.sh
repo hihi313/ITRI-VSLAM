@@ -3,7 +3,7 @@
 echo "Sart time=$(date +"%T")"
 
 IMG_NAME="ros-kalibr-ceres"
-IMG_TAG="depthai-ros"
+IMG_TAG="depthai-ros-only"
 CTNR_NAME="${IMG_NAME}_ctnr"
 WORKDIR="/catkin_ws" # Should be the same as Dockerfile
 
