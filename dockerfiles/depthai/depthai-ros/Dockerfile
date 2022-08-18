@@ -18,9 +18,9 @@ RUN echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="03e7", MODE="0666"' | tee /etc/ude
 # Install depthai core
 # cd /tmp
 WORKDIR /tmp
-RUN git clone --recursive https://github.com/luxonis/depthai-core.git --branch main \
-    && cmake -j$(nproc) -Hdepthai-core -Bdepthai-core/build -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/usr/local \
-    && cmake --parallel $(nproc) --build depthai-core/build --target install
+RUN git clone --recursive https://github.com/luxonis/depthai-core.git --branch main 
+RUN cmake -Hdepthai-core -Bdepthai-core/build -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/usr/local
+RUN cmake --build depthai-core/build -j$(nproc) --target install
 RUN rm -r depthai-core 
 # Install depthai ros
 WORKDIR /app/dai_ws/src
