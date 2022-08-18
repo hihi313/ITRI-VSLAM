@@ -19,8 +19,8 @@ RUN echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="03e7", MODE="0666"' | tee /etc/ude
 # cd /tmp
 WORKDIR /tmp
 RUN git clone --recursive https://github.com/luxonis/depthai-core.git --branch main
-RUN cmake -j$(nproc) -Hdepthai-core -Bdepthai-core/build -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/usr/local
-RUN cmake --parallel $(nproc) --build depthai-core/build --target install
+RUN cmake -j$(nproc) -Hdepthai-core -Bdepthai-core/build -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/usr/local \
+    && cmake --parallel $(nproc) --build depthai-core/build --target install
 RUN rm -r depthai-core 
 # Install depthai ros
 WORKDIR /app/dai_ws/src
@@ -33,6 +33,7 @@ RUN source /opt/ros/$ROS_DISTRO/setup.bash \
 # Clean up
 RUN apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+RUN rm -r ~/.hunter
 
 # Setup environment variable
 COPY ./entrypoint.sh /
