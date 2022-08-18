@@ -2,14 +2,18 @@
 
 echo "Sart time=$(date +"%T")"
 
-IMG_NAME="hihi313/ros-kalibr-ceres"
+IMG_NAME="hihi313/ros-ceres"
 IMG_TAG="latest"
 CTNR_NAME="camera_ctnr"
-WORKDIR="/catkin_ws/src"
+WORKDIR="/catkin_ws/src/"
 
-while getopts "i:t:b:r:e" opt
+VOLUME=""
+while getopts "v:r:e" opt
 do
   case $opt in
+    v)
+        VOLUME="-v $OPTARG"
+        ;;
     r)
         if [ "$OPTARG" == "m" ]
         then
@@ -21,6 +25,7 @@ do
         # Enable tracing
         set -x
 
+            # --volume="${PWD}:${WORKDIR}" \
         sudo xhost +local:root
         docker run \
             $RM \
@@ -32,7 +37,8 @@ do
             --privileged \
             --device-cgroup-rule='c 189:* rmw' \
             --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
-            --volume="${PWD}:${WORKDIR}" \
+            --mount type=volume,src="vscode-extensions",dst="/root/.vscode-server/extensions" \
+            $VOLUME \
             --name $CTNR_NAME \
             "${IMG_NAME}:${IMG_TAG}" \
             bash

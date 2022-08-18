@@ -9,6 +9,7 @@ SHELL ["/bin/bash", "-c"]
 USER root
 # Add USB rules
 RUN echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="03e7", MODE="0666"' | tee /etc/udev/rules.d/80-movidius.rules 
+# TODO: add below to entrypoint
 RUN /lib/systemd/systemd-udevd --daemon \
     && udevadm control --reload-rules && udevadm trigger
 # Install
