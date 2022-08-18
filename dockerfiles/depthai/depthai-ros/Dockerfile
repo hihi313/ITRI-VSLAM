@@ -29,6 +29,7 @@ WORKDIR $WS/$DAI_WS/src
 RUN git clone https://github.com/luxonis/depthai-ros.git
 WORKDIR $WS/$DAI_WS
 RUN rosdep install --from-paths src --ignore-src -r -y
+SHELL ["/bin/bash", "-c"] 
 RUN source /opt/ros/$ROS_DISTRO/setup.bash \
     && catkin_make -j$(nproc)
 
