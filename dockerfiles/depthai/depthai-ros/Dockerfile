@@ -17,8 +17,8 @@ RUN python3 -m pip install --upgrade pip
 RUN echo 'SUBSYSTEM=="usb", ATTRS{idVendor}=="03e7", MODE="0666"' | tee /etc/udev/rules.d/80-movidius.rules
 # Install depthai core
 RUN git clone --recursive https://github.com/luxonis/depthai-core.git --branch main
-RUN cmake -Hdepthai-core -Bdepthai-core/build -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/usr/local
-RUN cmake --build depthai-core/build --target install
+RUN cmake -j$(nproc) -Hdepthai-core -Bdepthai-core/build -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/usr/local
+RUN cmake -j$(nproc) --build depthai-core/build --target install
 RUN rm -r depthai-core 
 
 # Clean up
