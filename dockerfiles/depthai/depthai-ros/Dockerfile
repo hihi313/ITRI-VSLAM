@@ -2,8 +2,10 @@ FROM osrf/ros:noetic-desktop-full
 
 ENV TZ=Etc/UTC
 ARG DEBIAN_FRONTEND=noninteractive
+ARG WS=/app
+ARG DAI_WS=dai_ws
 
-WORKDIR /app
+WORKDIR $WS
 
 USER root
 # Install
@@ -23,9 +25,9 @@ RUN cmake -Hdepthai-core -Bdepthai-core/build -DBUILD_SHARED_LIBS=ON -DCMAKE_INS
 RUN cmake --build depthai-core/build -j$(nproc) --target install
 RUN rm -r depthai-core 
 # Install depthai ros
-WORKDIR /app/dai_ws/src
+WORKDIR $WS/$DAI_WS/src
 RUN git clone https://github.com/luxonis/depthai-ros.git
-WORKDIR /app
+WORKDIR $WS/$DAI_WS
 RUN rosdep install --from-paths src --ignore-src -r -y
 RUN source /opt/ros/$ROS_DISTRO/setup.bash \
     && catkin_make -j$(nproc)
