@@ -70,7 +70,7 @@ class ImagePublisher(object):
 
 if __name__ == "__main__":
     rospy.init_node("image_publisher", anonymous=True)
-    rate = rospy.Rate(2)  # 30 Hz
+    rate = rospy.Rate(30)  # 30 Hz
 
     pipeline = get_pipeline()
     imgPub = ImagePublisher("rgb_image")

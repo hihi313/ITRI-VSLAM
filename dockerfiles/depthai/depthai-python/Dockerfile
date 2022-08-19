@@ -4,7 +4,7 @@ ARG DEBIAN_FRONTEND=noninteractive
 ARG DEPTHAI_URL=https://docs.luxonis.com
 ARG DEPTHAI_SETUP_SCIRPT=install_dependencies.sh
 
-WORKDIR /catkin_ws
+WORKDIR /app
 
 USER root
 
@@ -18,6 +18,7 @@ RUN python3 -m pip install depthai
 # Clean up
 RUN apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+RUN rm -f ./$DEPTHAI_SETUP_SCIRPT
 
 # Setup environment variable
 COPY ./entrypoint.sh /
