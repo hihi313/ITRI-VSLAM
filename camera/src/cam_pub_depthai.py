@@ -2,7 +2,8 @@
 import cv2
 import depthai as dai
 import rospy
-from cv_bridge import CvBridge
+import std_msgs.msg
+from cv_bridge import CvBridge, CvBridgeError
 from numpy import ndarray
 from sensor_msgs.msg import Image
 
@@ -43,17 +44,27 @@ def get_pipeline():
 
 
 class ImagePublisher(object):
-    def __init__(self, topic: str) -> None:
+    def __init__(self, topic: str,
+                 frameId: str = "",
+                 encoding: str = "passthrough") -> None:
         self.topic = topic
+        self.frameId = frameId
+        self.encoding = encoding
+
         self.cvbridge = CvBridge()
-        self.pubImg = rospy.Publisher(topic Image)
+        self.pubImg = rospy.Publisher(topic, Image)
 
     def publish(self, image: ndarray) -> None:
         if not rospy.is_shutdown():
             try:
-                self.pubImg.publish(self.cvbridge.cv2_to_imgmsg(image))
+                img_msg = self.cvbridge.cv2_to_imgmsg(image, self.encoding)
             except CvBridgeError as e:
                 print(e)
+            h = std_msgs.msg.Header()
+            h.stamp = rospy.Time.now()
+            h.frame_id = self.frameId
+            img_msg.header = h
+            self.pubImg.publish(img_msg)
             rospy.loginfo("image published")
 
 
