@@ -11,7 +11,12 @@ from sensor_msgs.msg import Image
 def get_pipeline():
     # Create pipeline
     pipeline = dai.Pipeline()
+    # Define source and output
     camRgb = pipeline.create(dai.node.ColorCamera)
+    xoutVideo = pipeline.create(dai.node.XLinkOut)
+
+    xoutVideo.setStreamName("video")
+
     # Set the camera used?
     camRgb.setResolution(dai.ColorCameraProperties.SensorResolution.THE_12_MP)
     camRgb.setFps(30)
@@ -73,7 +78,7 @@ if __name__ == "__main__":
     rate = rospy.Rate(30)  # 30 Hz
 
     pipeline = get_pipeline()
-    imgPub = ImagePublisher("rgb_image")
+    imgPub = ImagePublisher("rgb_image", "camera0")
 
     # Connect to device and start pipeline
     with dai.Device(pipeline) as device:
