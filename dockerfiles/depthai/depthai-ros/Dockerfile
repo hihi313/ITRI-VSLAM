@@ -12,6 +12,7 @@ USER root
 # install depthai dependencies
 RUN apt update \
     && apt install  -y --no-install-recommends \
+    nano \
     python3 python3-pip udev cmake git python3-numpy libusb-1.0-0-dev build-essential libgtk2.0-dev pkg-config libavcodec-dev libavformat-dev libswscale-dev python-dev libtbb2 libtbb-dev libjpeg-dev libpng-dev libtiff-dev libdc1394-22-dev ffmpeg libsm6 libxext6 libgl1-mesa-glx \
     libopencv-dev
 RUN python3 -m pip install --upgrade pip

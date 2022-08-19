@@ -2,8 +2,8 @@
 
 echo "Sart time=$(date +"%T")"
 
-IMG_NAME="hihi313/ros-ceres"
-IMG_TAG="latest"
+IMG_NAME="hihi313/ros-kalibr-ceres"
+IMG_TAG="depthai-python"
 CTNR_NAME="camera_ctnr"
 WORKDIR="/catkin_ws/src/"
 
