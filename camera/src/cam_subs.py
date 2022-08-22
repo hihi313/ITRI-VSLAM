@@ -8,25 +8,25 @@ from sensor_msgs.msg import Image
 
 
 class ImageSubscriber(object):
-    def __init__(self, topic: str,
+    def __init__(self, cvbridge: CvBridge,
+                 topic: str,
                  filename: str = "{0}.jpg",
                  path: str = "images",
                  encoding: str = "passthrough") -> None:
+        self.cvbridge = cvbridge
         self.topic = topic
         self.filename = filename
         self.path = path
         self.encoding = encoding
 
-        self.cvbridge = CvBridge()
         self.subsImg = rospy.Subscriber(topic, Image, self.callback)
-        rospy.spin()
 
     def callback(self, msg: Image) -> None:
         try:
             img = self.cvbridge.imgmsg_to_cv2(msg, self.encoding)
         except CvBridgeError as e:
             print(e)
-        cv2.imshow("Subscriber recieve", img)
+        cv2.imshow(f"Subscriber :{self.topic}", img)
 
         # Save image
         key = cv2.waitKey(1)
@@ -42,6 +42,10 @@ class ImageSubscriber(object):
 if __name__ == '__main__':
     rospy.init_node("image_subscriber", anonymous=True)
     path = os.path.dirname(os.path.abspath(__file__))
-    imgSubs = ImageSubscriber(
-        "rgb_image", path=os.path.join(path, os.pardir, "images"))
-    cv2.destroyAllWindows()
+    cvbridge = CvBridge()
+    ispSubs = ImageSubscriber(cvbridge,
+                              "color/isp", filename="isp_{0}.jpg", path=os.path.join(path, os.pardir, "images"))
+    videoSubs = ImageSubscriber(cvbridge,
+                                "color/video", filename="video_{0}.jpg", path=os.path.join(path, os.pardir, "images"))
+    rospy.spin()
+    # cv2.destroyAllWindows()
