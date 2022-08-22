@@ -1,5 +1,7 @@
 #!/usr/bin/evn python
 
+# TODO: set the isp scale to the size the same as VSLAM system's input size
+
 """
 Modify from: https://github.com/luxonis/depthai-python/blob/b763ca44cd94ea43144b5d7504e6c018171f7ceb/examples/ColorCamera/rgb_camera_control.py
 This example shows usage of Camera Control message as well as ColorCamera configInput to change crop x and y
