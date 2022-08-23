@@ -80,7 +80,7 @@ if __name__ == '__main__':
 
             rFrames = qRight.tryGetAll()
             for rFrame in rFrames:
-                frame = lFrame.getCvFrame()
+                frame = rFrame.getCvFrame()
                 # cv2.imshow("right", frame)
                 rPub.publish(frame)
 
