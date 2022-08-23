@@ -1,39 +1,68 @@
 #!/usr/bin/evn python
-# TODO: add scale 
+from typing import Tuple
 
 import cv2
 import depthai as dai
+import rospy
+from cv_bridge import CvBridge, CvBridgeError
+
+from depthai_color_cam_pub import ImagePublisher
 
 
-def get_pipeline():
+def get_pipeline(size: Tuple[int, int]):
     # Create pipeline
     pipeline = dai.Pipeline()
 
     # Define sources and outputs
-    monoLeft = pipeline.create(dai.node.MonoCamera)
     monoRight = pipeline.create(dai.node.MonoCamera)
-    xoutLeft = pipeline.create(dai.node.XLinkOut)
-    xoutRight = pipeline.create(dai.node.XLinkOut)
+    monoLeft = pipeline.create(dai.node.MonoCamera)
+    manipRight = pipeline.create(dai.node.ImageManip)
+    manipLeft = pipeline.create(dai.node.ImageManip)
 
-    xoutLeft.setStreamName('left')
-    xoutRight.setStreamName('right')
+    # controlIn = pipeline.create(dai.node.XLinkIn)
+    configIn = pipeline.create(dai.node.XLinkIn)
+    manipOutRight = pipeline.create(dai.node.XLinkOut)
+    manipOutLeft = pipeline.create(dai.node.XLinkOut)
+
+    # controlIn.setStreamName('control')
+    configIn.setStreamName('config')
+    manipOutRight.setStreamName("right")
+    manipOutLeft.setStreamName("left")
 
     # Properties
-    monoLeft.setBoardSocket(dai.CameraBoardSocket.LEFT)
-    monoLeft.setResolution(dai.MonoCameraProperties.SensorResolution.THE_800_P)
     monoRight.setBoardSocket(dai.CameraBoardSocket.RIGHT)
+    monoLeft.setBoardSocket(dai.CameraBoardSocket.LEFT)
     monoRight.setResolution(
         dai.MonoCameraProperties.SensorResolution.THE_800_P)
+    monoLeft.setResolution(dai.MonoCameraProperties.SensorResolution.THE_800_P)
+    # manipRight.initialConfig.setKeepAspectRatio(True)
+    manipRight.initialConfig.setResize(size[0], size[1])
+    manipLeft.initialConfig.setResize(size[0], size[1])
+    manipRight.setMaxOutputFrameSize(
+        monoRight.getResolutionHeight()*monoRight.getResolutionWidth()*3)
 
     # Linking
-    monoRight.out.link(xoutRight.input)
-    monoLeft.out.link(xoutLeft.input)
+    monoRight.out.link(manipRight.inputImage)
+    monoLeft.out.link(manipLeft.inputImage)
+    # controlIn.out.link(monoRight.inputControl)
+    # controlIn.out.link(monoLeft.inputControl)
+    configIn.out.link(manipRight.inputConfig)
+    configIn.out.link(manipLeft.inputConfig)
+    manipRight.out.link(manipOutRight.input)
+    manipLeft.out.link(manipOutLeft.input)
 
     return pipeline
 
 
 if __name__ == '__main__':
-    pipeline = get_pipeline()
+    rospy.init_node("image_publisher", anonymous=True)
+    rate = rospy.Rate(10)  # ? Hz
+
+    pipeline = get_pipeline((1152, 720))
+    cvbridge = CvBridge()
+    lPub = ImagePublisher(cvbridge, "mono/left", "camera1")
+    rPub = ImagePublisher(cvbridge, "mono/right", "camera2")
+
     # Connect to device and start pipeline
     with dai.Device(pipeline) as device:
 
@@ -45,11 +74,17 @@ if __name__ == '__main__':
             # Instead of get (blocking), we use tryGet (non-blocking) which will return the available data or None otherwise
             lFrames = qLeft.tryGetAll()
             for lFrame in lFrames:
-                cv2.imshow("left", lFrame.getCvFrame())
+                frame = lFrame.getCvFrame()
+                # cv2.imshow("left", frame)
+                lPub.publish(frame)
 
             rFrames = qRight.tryGetAll()
             for rFrame in rFrames:
-                cv2.imshow("right", rFrame.getCvFrame())
+                frame = lFrame.getCvFrame()
+                # cv2.imshow("right", frame)
+                rPub.publish(frame)
 
             if cv2.waitKey(1) == ord('q'):
                 break
+
+            rate.sleep()
