@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
 
 from datetime import timedelta
+from struct import pack
+from typing import List
 
 import cv2
 import depthai as dai
 import rospy
+from sensor_msgs.msg import Imu
 
 
-def get_pipeline(accHz: int = 500, gyroHz: int = 400, reportTh: int = 5, maxReport: int = 20) -> dai.Pipeline:
+def get_pipeline(sensors: List[dai.IMUSensor], hzs: List[int], sync: bool = False,
+                 reportTh: int = 5, maxReport: int = 20) -> dai.Pipeline:
     # Create pipeline
     pipeline = dai.Pipeline()
 
@@ -17,10 +21,11 @@ def get_pipeline(accHz: int = 500, gyroHz: int = 400, reportTh: int = 5, maxRepo
 
     xlinkOut.setStreamName("imu")
 
-    # enable ACCELEROMETER_RAW at 500 hz rate
-    imu.enableIMUSensor(dai.IMUSensor.ACCELEROMETER_RAW, accHz)
-    # enable GYROSCOPE_RAW at 400 hz rate
-    imu.enableIMUSensor(dai.IMUSensor.GYROSCOPE_RAW, gyroHz)
+    if (sync):
+        imu.enableIMUSensor(sensors, min(hzs))
+    else:
+        for (sensor, hz) in zip(sensors, hzs):
+            imu.enableIMUSensor(sensor, hz)
     # it's recommended to set both setBatchReportThreshold and setMaxBatchReports to 20 when integrating in a pipeline with a lot of input/output connections
     # above this threshold packets will be sent in batch of X, if the host is not blocked and USB bandwidth is available
     imu.setBatchReportThreshold(reportTh)
@@ -35,15 +40,83 @@ def get_pipeline(accHz: int = 500, gyroHz: int = 400, reportTh: int = 5, maxRepo
     return pipeline
 
 
-def timeDeltaToMilliS(delta) -> float:
+class IMUPublisher(object):
+    def __init__(self, topic: str,  frameId: str = "") -> None:
+        self.topic = topic
+        self.frameId = frameId
+
+        self.pubImu = rospy.Publisher(topic, Imu)
+        self.baseT = None
+        self.gMaxDelay = timedelta()
+        self.aMaxDelay = timedelta()
+
+        self.imuF = "{: .06f}"
+        self.tsF = "{: .03f}"
+
+    def publish(self, packet: dai.IMUPacket, printImu: bool = False, stat: bool = False) -> None:
+        a = packet.acceleroMeter
+        g = packet.gyroscope
+        # q = packet.rotationVector
+        aT = a.timestamp.get()
+        gT = g.timestamp.get()
+        # qT = q.timestamp.get()
+
+        msg = Imu()
+        # msg.orientation.w = q.real
+        # msg.orientation.x = q.i
+        # msg.orientation.y = q.j
+        # msg.orientation.z = q.k
+        # msg.orientation_covariance[0] = -1
+        msg.angular_velocity.x = g.x
+        msg.angular_velocity.y = g.y
+        msg.angular_velocity.z = g.z
+        msg.angular_velocity_covariance[0] = -1
+        msg.linear_acceleration.x = a.x
+        msg.linear_acceleration.y = a.y
+        msg.linear_acceleration.z = a.z
+        msg.linear_acceleration_covariance[0] = -1
+        msg.header.stamp = rospy.Time.now()
+        self.pubImu.publish(msg)
+
+        if stat:
+            # Compute max delay
+            diff = gT - aT
+            if diff > self.gMaxDelay:
+                self.gMaxDelay = diff
+            elif -diff > self.aMaxDelay:
+                self.aMaxDelay = -diff
+        # base time
+        if printImu and self.baseT is None:
+            self.baseT = aT
+        if printImu:
+            # rospy.loginfo(f"{self.topic} published")
+            print(aT, gT)
+
+    def print(self, aT: timedelta, gT: timedelta) -> None:
+        # Compute base time
+        # if self.baseT is None:
+        #     self.baseT = aT if aT < gT else gT
+
+        print(
+            f"Acc[{self.tsF.format(toMs(aT - self.baseT))} ms]: "
+            f"\tx: {self.imuF.format(a.x)}\ty: {self.imuF.format(a.y)}\tz: {self.imuF.format(a.z)}[m/s^2]"
+            f"\tGyro[{self.tsF.format(toMs(gT - self.baseT))} ms]: "
+            f"\tx: {self.imuF.format(g.x)}\ty: {self.imuF.format(g.y)}\tz: {self.imuF.format(g.z)}[rad/s]",
+            end="\r")
+
+
+def toMs(delta: timedelta) -> float:
     return delta.total_seconds()*1000
 
 
 if __name__ == '__main__':
     rospy.init_node("image_publisher", anonymous=True)
-    rate = rospy.Rate(300)  # ? Hz
+    hz = 400
+    rate = rospy.Rate(hz)  # ? Hz
 
-    pipeline = get_pipeline()
+    pipeline = get_pipeline(sensors=[dai.IMUSensor.ROTATION_VECTOR,
+                            dai.IMUSensor.ACCELEROMETER_RAW, dai.IMUSensor.GYROSCOPE_RAW], hzs=[500], sync=True)
+    imuPub = IMUPublisher("imu", "imu")
 
     # Pipeline is defined, now we can connect to the device
     with dai.Device(pipeline) as device:
@@ -51,34 +124,20 @@ if __name__ == '__main__':
         # Output queue for imu bulk packets
         imuQueue = device.getOutputQueue(
             name="imu", maxSize=30, blocking=False)
-        baseTs = None
-        maxDiff = timedelta()
-        while True:
+
+        i = 0
+        max = int(10)
+        while not rospy.is_shutdown():
             imuData = imuQueue.get()  # blocking call, will wait until a new data has arrived
 
-            imuPackets = imuData.packets
-            for imuPacket in imuPackets:
-                acceleroValues = imuPacket.acceleroMeter
-                gyroValues = imuPacket.gyroscope
+            for packet in imuData.packets:
+                imuPub.publish(packet)
+                # if i >= max:
+                #     i = 0
+                #     imuPub.print(packet)
+                rate.sleep()
 
-                acceleroTs = acceleroValues.timestamp.get()
-                gyroTs = gyroValues.timestamp.get()
-                if abs(gyroTs - acceleroTs) > maxDiff:
-                    maxDiff = abs(gyroTs - acceleroTs)
-                print(f"maxDiff: {timeDeltaToMilliS(maxDiff)}")
-                if baseTs is None:
-                    baseTs = acceleroTs if acceleroTs < gyroTs else gyroTs
-                acceleroTs = timeDeltaToMilliS(acceleroTs - baseTs)
-                gyroTs = timeDeltaToMilliS(gyroTs - baseTs)
+            i = i + 1
 
-                imuF = "{:.06f}"
-                tsF = "{:.03f}"
-
-                print(f"Accelerometer timestamp: {tsF.format(acceleroTs)} ms")
-                print(
-                    f"Accelerometer [m/s^2]: x: {imuF.format(acceleroValues.x)} y: {imuF.format(acceleroValues.y)} z: {imuF.format(acceleroValues.z)}")
-                print(f"Gyroscope timestamp: {tsF.format(gyroTs)} ms")
-                print(
-                    f"Gyroscope [rad/s]: x: {imuF.format(gyroValues.x)} y: {imuF.format(gyroValues.y)} z: {imuF.format(gyroValues.z)} ")
-            if cv2.waitKey(1) == ord('q'):
-                break
+        print(f"\nGyro max delay: {toMs(imuPub.gMaxDelay): .03f} ms")
+        print(f"Acc max delay: {toMs(imuPub.aMaxDelay): .03f} ms")

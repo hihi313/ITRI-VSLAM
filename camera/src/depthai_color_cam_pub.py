@@ -115,17 +115,16 @@ class ImagePublisher(object):
         self.pubImg = rospy.Publisher(topic, Image)
 
     def publish(self, image: ndarray) -> None:
-        if not rospy.is_shutdown():
-            try:
-                img_msg = self.cvbridge.cv2_to_imgmsg(image, self.encoding)
-            except CvBridgeError as e:
-                print(e)
-            h = std_msgs.msg.Header()
-            h.stamp = rospy.Time.now()
-            h.frame_id = self.frameId
-            img_msg.header = h
-            self.pubImg.publish(img_msg)
-            # rospy.loginfo(f"{self.topic} published")
+        try:
+            img_msg = self.cvbridge.cv2_to_imgmsg(image, self.encoding)
+        except CvBridgeError as e:
+            print(e)
+        h = std_msgs.msg.Header()
+        h.stamp = rospy.Time.now()
+        h.frame_id = self.frameId
+        img_msg.header = h
+        self.pubImg.publish(img_msg)
+        # rospy.loginfo(f"{self.topic} published")
 
 
 if __name__ == "__main__":
@@ -183,7 +182,7 @@ if __name__ == "__main__":
         effect_mode = cycle([item for name, item in vars(
             dai.CameraControl.EffectMode).items() if name.isupper()])
 
-        while True:
+        while not rospy.is_shutdown():
             vidFrames = videoQueue.tryGetAll()
             # for vidFrame in vidFrames:
             #     colorVidPub.publish(vidFrame.getCvFrame())

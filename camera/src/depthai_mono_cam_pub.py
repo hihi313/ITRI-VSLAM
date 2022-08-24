@@ -70,7 +70,7 @@ if __name__ == '__main__':
         qLeft = device.getOutputQueue(name="left", maxSize=4, blocking=False)
         qRight = device.getOutputQueue(name="right", maxSize=4, blocking=False)
 
-        while True:
+        while not rospy.is_shutdown():
             # Instead of get (blocking), we use tryGet (non-blocking) which will return the available data or None otherwise
             lFrames = qLeft.tryGetAll()
             for lFrame in lFrames:
