@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(camera)
+project(ros_nodes)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -10,8 +10,10 @@ project(camera)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
+  sensor_msgs
   std_msgs
 )
+find_package(depthai CONFIG REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -70,7 +72,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate added messages and services with any dependencies listed here
 # generate_messages(
 #   DEPENDENCIES
-#   std_msgs
+#   sensor_msgs#   std_msgs
 # )
 
 ################################################
@@ -104,8 +106,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES camera
-#  CATKIN_DEPENDS roscpp rospy std_msgs
+#  LIBRARIES ros_nodes
+#  CATKIN_DEPENDS depthai roscpp rospy sensor_msgs std_msgs
 #  DEPENDS system_lib
 )
 
@@ -122,7 +124,7 @@ include_directories(
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/camera.cpp
+#   src/${PROJECT_NAME}/ros_nodes.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -133,8 +135,8 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/camera_node.cpp)
-add_executable(cam_pub_FFC3P src/cam_pub_FFC3P.cpp)
+# add_executable(${PROJECT_NAME}_node src/ros_nodes_node.cpp)
+add_executable(depthai_imu_pub src/depthai_imu_pub.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -150,8 +152,9 @@ add_executable(cam_pub_FFC3P src/cam_pub_FFC3P.cpp)
 # target_link_libraries(${PROJECT_NAME}_node
 #   ${catkin_LIBRARIES}
 # )
-target_link_libraries(cam_pub_FFC3P
+target_link_libraries(depthai_imu_pub 
   ${catkin_LIBRARIES}
+  depthai::opencv
 )
 
 #############
@@ -201,7 +204,7 @@ target_link_libraries(cam_pub_FFC3P
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_camera.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_ros_nodes.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
