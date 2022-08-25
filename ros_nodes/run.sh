@@ -3,9 +3,9 @@
 echo "Sart time=$(date +"%T")"
 
 IMG_NAME="hihi313/ros-kalibr-ceres"
-IMG_TAG="depthai-python"
+IMG_TAG="depthai-ros"
 CTNR_NAME="camera_ctnr"
-WORKDIR="/catkin_ws/src/"
+WORKDIR="/app"
 
 VOLUME=""
 while getopts "v:r:e" opt

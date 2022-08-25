@@ -40,6 +40,7 @@ RUN rm -r depthai-core
 # RUN source /opt/ros/$ROS_DISTRO/setup.bash \
 #     && catkin_make -j$(nproc)
 
+WORKDIR $WS
 
 # Clean up
 RUN apt-get clean \
