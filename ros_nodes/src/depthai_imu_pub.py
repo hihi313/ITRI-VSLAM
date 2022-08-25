@@ -56,17 +56,17 @@ class IMUPublisher(object):
     def publish(self, packet: dai.IMUPacket, printImu: bool = False, stat: bool = False) -> None:
         a = packet.acceleroMeter
         g = packet.gyroscope
-        # q = packet.rotationVector
+        q = packet.rotationVector
         aT = a.timestamp.get()
         gT = g.timestamp.get()
-        # qT = q.timestamp.get()
+        qT = q.timestamp.get()
 
         msg = Imu()
-        # msg.orientation.w = q.real
-        # msg.orientation.x = q.i
-        # msg.orientation.y = q.j
-        # msg.orientation.z = q.k
-        # msg.orientation_covariance[0] = -1
+        msg.orientation.w = q.real
+        msg.orientation.x = q.i
+        msg.orientation.y = q.j
+        msg.orientation.z = q.k
+        msg.orientation_covariance[0] = -1
         msg.angular_velocity.x = g.x
         msg.angular_velocity.y = g.y
         msg.angular_velocity.z = g.z
@@ -86,9 +86,9 @@ class IMUPublisher(object):
             elif -diff > self.aMaxDelay:
                 self.aMaxDelay = -diff
         # base time
-        if printImu and self.baseT is None:
-            self.baseT = aT
         if printImu:
+            if self.baseT is None:
+                self.baseT = aT
             # rospy.loginfo(f"{self.topic} published")
             print(aT, gT)
 
@@ -125,19 +125,12 @@ if __name__ == '__main__':
         imuQueue = device.getOutputQueue(
             name="imu", maxSize=30, blocking=False)
 
-        i = 0
-        max = int(10)
         while not rospy.is_shutdown():
             imuData = imuQueue.get()  # blocking call, will wait until a new data has arrived
 
             for packet in imuData.packets:
                 imuPub.publish(packet)
-                # if i >= max:
-                #     i = 0
-                #     imuPub.print(packet)
                 rate.sleep()
-
-            i = i + 1
 
         print(f"\nGyro max delay: {toMs(imuPub.gMaxDelay): .03f} ms")
         print(f"Acc max delay: {toMs(imuPub.aMaxDelay): .03f} ms")
