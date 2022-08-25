@@ -1,4 +1,4 @@
-FROM osrf/ros:noetic-desktop-full
+FROM hihi313/ros-kalibr-ceres
 
 
 ENV TZ=Etc/UTC

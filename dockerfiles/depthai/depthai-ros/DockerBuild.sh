@@ -3,9 +3,9 @@
 echo "Sart time=$(date +"%T")"
 
 IMG_NAME="ros-kalibr-ceres"
-IMG_TAG="depthai-ros-only"
+IMG_TAG="depthai-ros"
 CTNR_NAME="${IMG_NAME}_ctnr"
-WORKDIR="/catkin_ws" # Should be the same as Dockerfile
+WORKDIR="/app" # Should be the same as Dockerfile
 
 while getopts "i:t:b:r:e" opt
 do
