@@ -60,33 +60,40 @@ class IMUPublisher
 {
 private:
     ros::Publisher pub;
-    bool firstTs;
-    time_point<steady_clock, steady_clock::duration> baseTs;
-    steady_clock::duration gMaxDelay, aMaxDelay;
 
 public:
+    bool firstTs;
+    time_point<steady_clock, steady_clock::duration> baseTs;
     string topic, frameId;
+    steady_clock::duration gMaxDelay, aMaxDelay;
+
     IMUPublisher(ros::NodeHandle &handle,
                  string topic, string frameId = "")
     {
-        this->topic = topic;
-        this->frameId = frameId;
-
         this->pub = handle.advertise<sensor_msgs::Imu>(this->topic, 1000);
+
         this->firstTs = false;
         this->baseTs = time_point<steady_clock, steady_clock::duration>();
+        this->topic = topic;
+        this->frameId = frameId;
         this->gMaxDelay = steady_clock::duration::zero();
         this->aMaxDelay = steady_clock::duration::zero();
     }
-    void publish(IMUPacket packet, bool print = false, bool stat = false)
+    void publish(IMUPacket packet, bool stat = false)
     {
         IMUReportAccelerometer &a = packet.acceleroMeter;
         IMUReportGyroscope &g = packet.gyroscope;
+        IMUReportRotationVectorWAcc &q = packet.rotationVector;
 
         time_point<steady_clock, steady_clock::duration> aT = a.timestamp.get();
         time_point<steady_clock, steady_clock::duration> gT = g.timestamp.get();
+        time_point<steady_clock, steady_clock::duration> qT = q.timestamp.get();
 
         sensor_msgs::Imu msg;
+        msg.orientation.w = q.real;
+        msg.orientation.x = q.i;
+        msg.orientation.y = q.j;
+        msg.orientation.z = q.k;
         msg.orientation_covariance[0] = -1;
         msg.angular_velocity.x = g.x;
         msg.angular_velocity.y = g.y;
@@ -98,6 +105,23 @@ public:
         msg.linear_acceleration_covariance[0] = -1;
         msg.header.stamp = ros::Time::now();
         this->pub.publish(msg);
+        // ROS_INFO("%s published", this->topic)
+
+        // Compute max delay
+        if (stat)
+        {
+            steady_clock::duration diff = gT - aT;
+            if (diff > this->gMaxDelay)
+                this->gMaxDelay = diff;
+            else if (-diff > this->aMaxDelay)
+                this->aMaxDelay = -diff;
+        }
+        // base time
+        if (!this->firstTs)
+        {
+            this->baseTs = min(aT, gT);
+            this->firstTs = true;
+        }
     }
 };
 
@@ -106,52 +130,36 @@ int main(int argc, char **argv)
     // node
     ros::init(argc, argv, "imu_publisher");
     ros::NodeHandle handle;
-    int hz = 400 ;
+    int hz = 400;
     ros::Rate loop_rate(hz);
-
-    // Pipeline
-    IMUSensor sensors[] = {IMUSensor::ACCELEROMETER_RAW, IMUSensor::GYROSCOPE_RAW, IMUSensor::ROTATION_VECTOR};
-    int hzs[] = {500};
-    Pipeline pipeline = get_pipeline(sensors, hzs, true);
 
     // Publisher
     IMUPublisher imuPub = IMUPublisher(handle, "imu", "imu");
 
-    // Pipeline is defined, now we can connect to the device
+    // Pipeline
+    IMUSensor sensors[] = {IMUSensor::ACCELEROMETER_RAW, IMUSensor::GYROSCOPE_RAW, IMUSensor::ROTATION_VECTOR};
+    int hzs[] = {500, 500, 500};
+    Pipeline pipeline = get_pipeline(sensors, hzs, false);
     Device d(pipeline);
-
-    bool firstTs = false;
-
     shared_ptr<DataOutputQueue> imuQueue = d.getOutputQueue("imu", 50, false);
-    time_point<steady_clock, steady_clock::duration> baseTs = time_point<steady_clock, steady_clock::duration>();
+
     while (ros::ok())
     {
         shared_ptr<IMUData> imuData = imuQueue->get<IMUData>();
-
         vector<IMUPacket> imuPackets = imuData->packets;
         for (IMUPacket &imuPacket : imuPackets)
         {
-            // IMUReportAccelerometer &acceleroValues = imuPacket.acceleroMeter;
-            // IMUReportGyroscope &gyroValues = imuPacket.gyroscope;
-
-            // time_point<steady_clock, steady_clock::duration> acceleroTs1 = acceleroValues.timestamp.get();
-            // time_point<steady_clock, steady_clock::duration> gyroTs1 = gyroValues.timestamp.get();
-            // if (!firstTs)
-            // {
-            //     baseTs = min(acceleroTs1, gyroTs1);
-            //     firstTs = true;
-            // }
-
-            // steady_clock::duration acceleroTs = acceleroTs1 - baseTs;
-            // steady_clock::duration gyroTs = gyroTs1 - baseTs;
-
-            // printf("Accelerometer timestamp: %ld ms\n", toMs(acceleroTs));
-            // printf("Accelerometer [m/s^2]: x: %.3f y: %.3f z: %.3f \n", acceleroValues.x, acceleroValues.y, acceleroValues.z);
-            // printf("Gyroscope timestamp: %ld ms\n", static_cast<long>(duration_cast<milliseconds>(gyroTs).count()));
-            // printf("Gyroscope [rad/s]: x: %.3f y: %.3f z: %.3f \n", gyroValues.x, gyroValues.y, gyroValues.z);
-
             // Publish
             imuPub.publish(imuPacket);
+
+            // Print
+            IMUReportAccelerometer &a = imuPacket.acceleroMeter;
+            IMUReportGyroscope &g = imuPacket.gyroscope;
+            steady_clock::duration aT = a.timestamp.get() - imuPub.baseTs;
+            steady_clock::duration gT = g.timestamp.get() - imuPub.baseTs;
+            printf("Acc[%ld ms]:\tx: %.3f\ty: %.3f\tz: %.3f[m/s^2]", toMs(aT), a.x, a.y, a.z);
+            printf("Gyro[%ld ms]:\tx: %.3f\ty: %.3f\tz: %.3f[rad/s]", toMs(gT), g.x, g.y, g.z);
+
             loop_rate.sleep();
         }
     }
