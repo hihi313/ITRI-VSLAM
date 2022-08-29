@@ -124,31 +124,31 @@ int main(int argc, char **argv)
 
     shared_ptr<DataOutputQueue> imuQueue = d.getOutputQueue("imu", 50, false);
     time_point<steady_clock, steady_clock::duration> baseTs = time_point<steady_clock, steady_clock::duration>();
-    while (true)
+    while (ros::ok())
     {
         shared_ptr<IMUData> imuData = imuQueue->get<IMUData>();
 
         vector<IMUPacket> imuPackets = imuData->packets;
         for (IMUPacket &imuPacket : imuPackets)
         {
-            IMUReportAccelerometer &acceleroValues = imuPacket.acceleroMeter;
-            IMUReportGyroscope &gyroValues = imuPacket.gyroscope;
+            // IMUReportAccelerometer &acceleroValues = imuPacket.acceleroMeter;
+            // IMUReportGyroscope &gyroValues = imuPacket.gyroscope;
 
-            time_point<steady_clock, steady_clock::duration> acceleroTs1 = acceleroValues.timestamp.get();
-            time_point<steady_clock, steady_clock::duration> gyroTs1 = gyroValues.timestamp.get();
-            if (!firstTs)
-            {
-                baseTs = min(acceleroTs1, gyroTs1);
-                firstTs = true;
-            }
+            // time_point<steady_clock, steady_clock::duration> acceleroTs1 = acceleroValues.timestamp.get();
+            // time_point<steady_clock, steady_clock::duration> gyroTs1 = gyroValues.timestamp.get();
+            // if (!firstTs)
+            // {
+            //     baseTs = min(acceleroTs1, gyroTs1);
+            //     firstTs = true;
+            // }
 
-            steady_clock::duration acceleroTs = acceleroTs1 - baseTs;
-            steady_clock::duration gyroTs = gyroTs1 - baseTs;
+            // steady_clock::duration acceleroTs = acceleroTs1 - baseTs;
+            // steady_clock::duration gyroTs = gyroTs1 - baseTs;
 
-            printf("Accelerometer timestamp: %ld ms\n", toMs(acceleroTs));
-            printf("Accelerometer [m/s^2]: x: %.3f y: %.3f z: %.3f \n", acceleroValues.x, acceleroValues.y, acceleroValues.z);
-            printf("Gyroscope timestamp: %ld ms\n", static_cast<long>(duration_cast<milliseconds>(gyroTs).count()));
-            printf("Gyroscope [rad/s]: x: %.3f y: %.3f z: %.3f \n", gyroValues.x, gyroValues.y, gyroValues.z);
+            // printf("Accelerometer timestamp: %ld ms\n", toMs(acceleroTs));
+            // printf("Accelerometer [m/s^2]: x: %.3f y: %.3f z: %.3f \n", acceleroValues.x, acceleroValues.y, acceleroValues.z);
+            // printf("Gyroscope timestamp: %ld ms\n", static_cast<long>(duration_cast<milliseconds>(gyroTs).count()));
+            // printf("Gyroscope [rad/s]: x: %.3f y: %.3f z: %.3f \n", gyroValues.x, gyroValues.y, gyroValues.z);
 
             // Publish
             imuPub.publish(imuPacket);
