@@ -110,7 +110,7 @@ def toMs(delta: timedelta) -> float:
 
 
 if __name__ == '__main__':
-    rospy.init_node("image_publisher", anonymous=True)
+    rospy.init_node("imu_publisher", anonymous=True)
     hz = 400
     rate = rospy.Rate(hz)  # ? Hz
 
