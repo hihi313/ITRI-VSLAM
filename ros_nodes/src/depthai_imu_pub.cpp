@@ -70,12 +70,13 @@ public:
     IMUPublisher(ros::NodeHandle &handle,
                  string topic, string frameId = "")
     {
+        this->topic = topic;
+        this->frameId = frameId;
+
         this->pub = handle.advertise<sensor_msgs::Imu>(this->topic, 1000);
 
         this->firstTs = false;
         this->baseTs = time_point<steady_clock, steady_clock::duration>();
-        this->topic = topic;
-        this->frameId = frameId;
         this->gMaxDelay = steady_clock::duration::zero();
         this->aMaxDelay = steady_clock::duration::zero();
     }
@@ -103,6 +104,7 @@ public:
         msg.linear_acceleration.y = a.y;
         msg.linear_acceleration.z = a.z;
         msg.linear_acceleration_covariance[0] = -1;
+        msg.header.frame_id = this->frameId;
         msg.header.stamp = ros::Time::now();
         this->pub.publish(msg);
         // ROS_INFO("%s published", this->topic)
@@ -143,6 +145,7 @@ int main(int argc, char **argv)
     Device d(pipeline);
     shared_ptr<DataOutputQueue> imuQueue = d.getOutputQueue("imu", 50, false);
 
+    int i = 0, max = (hz / 10.0) - 1; // print in 10 hz
     while (ros::ok())
     {
         shared_ptr<IMUData> imuData = imuQueue->get<IMUData>();
@@ -153,13 +156,17 @@ int main(int argc, char **argv)
             imuPub.publish(imuPacket);
 
             // Print
-            IMUReportAccelerometer &a = imuPacket.acceleroMeter;
-            IMUReportGyroscope &g = imuPacket.gyroscope;
-            steady_clock::duration aT = a.timestamp.get() - imuPub.baseTs;
-            steady_clock::duration gT = g.timestamp.get() - imuPub.baseTs;
-            printf("Acc[%ld ms]:\tx: %.3f\ty: %.3f\tz: %.3f[m/s^2]", toMs(aT), a.x, a.y, a.z);
-            printf("Gyro[%ld ms]:\tx: %.3f\ty: %.3f\tz: %.3f[rad/s]", toMs(gT), g.x, g.y, g.z);
-
+            if (i >= max)
+            {
+                IMUReportAccelerometer &a = imuPacket.acceleroMeter;
+                IMUReportGyroscope &g = imuPacket.gyroscope;
+                steady_clock::duration aT = a.timestamp.get() - imuPub.baseTs;
+                steady_clock::duration gT = g.timestamp.get() - imuPub.baseTs;
+                printf("Acc[%ld ms]:\tx: %.3f\ty: %.3f\tz: %.3f[m/s^2]\n", toMs(aT), a.x, a.y, a.z);
+                printf("Gyro[%ld ms]:\tx: %.3f\ty: %.3f\tz: %.3f[rad/s]\n", toMs(gT), g.x, g.y, g.z);
+                i = 0;
+            }
+            ++i;
             loop_rate.sleep();
         }
     }
