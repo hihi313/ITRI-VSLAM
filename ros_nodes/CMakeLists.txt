@@ -12,6 +12,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   sensor_msgs
   std_msgs
+  cv_bridge
 )
 find_package(depthai CONFIG REQUIRED)
 
@@ -137,6 +138,7 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/ros_nodes_node.cpp)
 add_executable(depthai_imu_pub src/depthai_imu_pub.cpp)
+add_executable(depthai_color_cam_pub src/depthai_color_cam_pub.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -153,6 +155,10 @@ add_executable(depthai_imu_pub src/depthai_imu_pub.cpp)
 #   ${catkin_LIBRARIES}
 # )
 target_link_libraries(depthai_imu_pub 
+  ${catkin_LIBRARIES}
+  depthai::opencv
+)
+target_link_libraries(depthai_color_cam_pub 
   ${catkin_LIBRARIES}
   depthai::opencv
 )
