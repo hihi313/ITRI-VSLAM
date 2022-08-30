@@ -129,7 +129,7 @@ class ImagePublisher(object):
 
 if __name__ == "__main__":
     rospy.init_node("image_publisher", anonymous=True)
-    rate = rospy.Rate(10)  # ? Hz
+    rate = rospy.Rate(30)  # ? Hz
 
     pipeline, colorCam = get_pipeline((640, 480))
     cvbridge = CvBridge()
@@ -209,6 +209,8 @@ if __name__ == "__main__":
                     configQueue.send(cfg)
                     print('Sending new crop - x: ', cropX, ' y: ', cropY)
                     sendCamConfig = False
+
+                rate.sleep()
 
             # Update screen (1ms pooling rate)
             key = cv2.waitKey(1)
@@ -384,4 +386,3 @@ if __name__ == "__main__":
                     print("Chroma denoise:", chroma_denoise)
                     ctrl.setChromaDenoise(chroma_denoise)
                 controlQueue.send(ctrl)
-            rate.sleep()
