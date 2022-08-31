@@ -139,9 +139,9 @@ add_library(vslam src/vslam.cpp)
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/ros_nodes_node.cpp)
-add_executable(depthai_imu_pub src/depthai_imu_pub.cpp)
-add_executable(depthai_mono_cam_L_pub src/depthai_mono_cam_L_pub.cpp)
-add_executable(depthai_mono_cam_R_pub src/depthai_mono_cam_R_pub.cpp)
+# add_executable(depthai_imu_pub src/depthai_imu_pub.cpp)
+# add_executable(depthai_mono_cam_L_pub src/depthai_mono_cam_L_pub.cpp)
+add_executable(depthai_stereo_rgb_imu_pub src/depthai_stereo_rgb_imu_pub.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -161,16 +161,16 @@ target_link_libraries(vslam
   ${catkin_LIBRARIES}
   depthai::opencv
 )
-target_link_libraries(depthai_imu_pub 
-  ${catkin_LIBRARIES}
-  depthai::opencv
-)
-target_link_libraries(depthai_mono_cam_L_pub 
-  ${catkin_LIBRARIES}
-  depthai::opencv
-  vslam
-)
-target_link_libraries(depthai_mono_cam_R_pub 
+# target_link_libraries(depthai_imu_pub 
+#   ${catkin_LIBRARIES}
+#   depthai::opencv
+# )
+# target_link_libraries(depthai_mono_cam_L_pub 
+#   ${catkin_LIBRARIES}
+#   depthai::opencv
+#   vslam
+# )
+target_link_libraries(depthai_stereo_rgb_imu_pub 
   ${catkin_LIBRARIES}
   depthai::opencv
   vslam
