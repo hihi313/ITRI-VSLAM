@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   cv_bridge
+  image_transport
 )
 find_package(depthai CONFIG REQUIRED)
 
@@ -127,6 +128,7 @@ include_directories(
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/ros_nodes.cpp
 # )
+add_library(vslam src/vslam.cpp)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -138,7 +140,8 @@ include_directories(
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(${PROJECT_NAME}_node src/ros_nodes_node.cpp)
 add_executable(depthai_imu_pub src/depthai_imu_pub.cpp)
-add_executable(depthai_color_cam_pub src/depthai_color_cam_pub.cpp)
+add_executable(depthai_mono_cam_L_pub src/depthai_mono_cam_L_pub.cpp)
+add_executable(depthai_mono_cam_R_pub src/depthai_mono_cam_R_pub.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -154,13 +157,23 @@ add_executable(depthai_color_cam_pub src/depthai_color_cam_pub.cpp)
 # target_link_libraries(${PROJECT_NAME}_node
 #   ${catkin_LIBRARIES}
 # )
+target_link_libraries(vslam 
+  ${catkin_LIBRARIES}
+  depthai::opencv
+)
 target_link_libraries(depthai_imu_pub 
   ${catkin_LIBRARIES}
   depthai::opencv
 )
-target_link_libraries(depthai_color_cam_pub 
+target_link_libraries(depthai_mono_cam_L_pub 
   ${catkin_LIBRARIES}
   depthai::opencv
+  vslam
+)
+target_link_libraries(depthai_mono_cam_R_pub 
+  ${catkin_LIBRARIES}
+  depthai::opencv
+  vslam
 )
 
 #############
