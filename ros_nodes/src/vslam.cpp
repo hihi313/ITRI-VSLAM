@@ -4,6 +4,7 @@
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/image_encodings.h>
 #include <depthai/depthai.hpp>
+#include "../include/vslam.hpp"
 
 using namespace std;
 using namespace std::chrono;
@@ -162,7 +163,7 @@ namespace vslam
             msg.linear_acceleration.y = a.y;
             msg.linear_acceleration.z = a.z;
             msg.linear_acceleration_covariance[0] = -1;
-            msg.header.frame_id = this->frameId;
+            msg.header.frame_id = this->frame_id;
             msg.header.stamp = ros::Time::now();
             this->pub.publish(msg);
             // ROS_INFO("%s published", this->topic)
@@ -195,7 +196,7 @@ namespace vslam
     {
     private:
         string encoding;
-        image_transport::ImageTransport &it;
+        image_transport::ImageTransport *it;
         image_transport::Publisher pub;
 
     public:
@@ -206,7 +207,8 @@ namespace vslam
             this->queue_size = queue_size;
             this->encoding = encoding;
             this->frame_id = frame_id;
-            this->it = image_transport::ImageTransport(handle);
+            image_transport::ImageTransport it(handle);
+            this->it = &it;
             this->pub = it.advertise(this->topic, queue_size);
         }
         void publish(cv::Mat &image)
