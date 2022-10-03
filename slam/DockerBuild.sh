@@ -2,10 +2,10 @@
 
 echo "Sart time=$(date +"%T")"
 
-IMG_NAME="orb-slam"
-IMG_TAG="latest"
-CTNR_NAME="${IMG_NAME}_ctnr"
-WORKDIR="/app" # Should be the same as Dockerfile
+IMG_NAME="lmwafer/orb-slam-3-ready"
+IMG_TAG="1.1-ubuntu18.04"
+CTNR_NAME="orb_slam3_ctnr"
+WORKDIR="/dpds" # Should be the same as Dockerfile
 
 while getopts "i:t:b:r:e" opt; do
     case $opt in
@@ -41,6 +41,7 @@ while getopts "i:t:b:r:e" opt; do
         # --mount type=volume,src="",dst="" \
         # --mount type=bind,src="",dst="" \
         # --user="$(id -u):$(id -g)" \
+        # --mount type=volume,src="apt-list",dst="/var/lib/apt/lists/" \
         sudo xhost +local:root
         docker run --privileged \
             $RM \
@@ -49,11 +50,11 @@ while getopts "i:t:b:r:e" opt; do
             -p 8087:8087 \
             -e DISPLAY="host.docker.internal:0" \
             -e QT_X11_NO_MITSHM=1 \
+            --gpus all \
             -v /dev:/dev:ro \
             --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
             --mount type=volume,src="vscode-extensions",dst="/root/.vscode-server/extensions" \
-            --mount type=volume,src="apt-list",dst="/var/lib/apt/lists/" \
-            --volume="$PWD:$WORKDIR" \
+            --volume="$PWD:$WORKDIR/ORB_SLAM3/src" \
             --name $CTNR_NAME \
             "$IMG_NAME:$IMG_TAG"
 
