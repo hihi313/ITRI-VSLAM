@@ -19,7 +19,7 @@ RUN apt update \
     libgl1-mesa-dev libwayland-dev libxkbcommon-dev wayland-protocols libegl1-mesa-dev \
     libc++-dev libglew-dev \
     # OpenCV dependencies
-    libgtk2.0-dev libvtk5-dev libjpeg-dev libtiff4-dev libjasper-dev libopenexr-dev libtbb-dev\
+    libavcodec-dev libavformat-dev libswscale-dev libgstreamer-plugins-base1.0-dev libgstreamer1.0-dev \
     # Eigen3
     libeigen3-dev
 
@@ -27,7 +27,7 @@ RUN apt update \
 WORKDIR /dpds
 
 # Install Pangolin
-RUN git clone --recursive --branch v0.8 https://github.com/stevenlovegrove/Pangolin.git \\
+RUN git clone --recursive --branch v0.8 https://github.com/stevenlovegrove/Pangolin.git \
     && cd Pangolin \
     && cmake -D CMAKE_BUILD_TYPE=RELEASE \
     && cmake -B build -GNinja \
