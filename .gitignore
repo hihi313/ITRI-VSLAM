@@ -645,3 +645,4 @@ FodyWeavers.xsd
 
 **/images/*
 *.bag
+slam/data
