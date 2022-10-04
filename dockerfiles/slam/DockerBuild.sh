@@ -2,9 +2,9 @@
 
 echo "Sart time=$(date +"%T")"
 
-IMG_NAME="ubuntu"
-IMG_TAG="20.04"
-CTNR_NAME="${IMG_NAME}_ctnr"
+IMG_NAME="hihi313/slam"
+IMG_TAG="latest"
+CTNR_NAME="slam_ctnr"
 WORKDIR="/app" # Should be the same as Dockerfile
 
 while getopts "i:t:b:r:e" opt
@@ -26,7 +26,7 @@ do
         START="$(TZ=UTC0 printf '%(%s)T\n' '-1')" # `-1`  is the current time
         
         docker rmi $IMG_NAME
-        docker build $CACHE -t $IMG_NAME .
+        docker build $CACHE -t $IMG_NAME:$IMG_TAG
         
         # Pring elapsed time
         ELAPSED=$(( $(TZ=UTC0 printf '%(%s)T\n' '-1') - START ))
@@ -57,6 +57,7 @@ do
             --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
             --mount type=volume,src="vscode-extensions",dst="/root/.vscode-server/extensions" \
             --volume="$PWD:$WORKDIR" \
+            --workdir $WORKDIR \
             --name $CTNR_NAME \
             "$IMG_NAME:$IMG_TAG"
 
