@@ -20,13 +20,15 @@ RUN apt update \
     # Eigen
     libeigen3-dev \
     # g2o dependencies
-    libsuitesparse-dev qtdeclarative5-dev qt5-qmake libqglviewer-dev-qt5
+    libsuitesparse-dev qtdeclarative5-dev qt5-qmake libqglviewer-dev-qt5 \
+    # Ceres dependencies
+    libgoogle-glog-dev libgflags-dev libatlas-base-dev
 
 
 WORKDIR /tmp
 
 # Install OpenCV
-RUN git clone https://github.com/opencv/opencv.git \
+RUN git clone --branch 4.6.0 --single-branch https://github.com/opencv/opencv.git \
     && cd opencv \
     && mkdir build \
     && cd build \
@@ -51,7 +53,7 @@ RUN git clone https://github.com/opencv/opencv.git \
     && ninja install
 
 # Install g2o
-RUN git clone https://github.com/RainerKuemmerle/g2o.git \
+RUN git clone --branch 20201223_git --single-branch https://github.com/RainerKuemmerle/g2o.git \
     && cd g2o \
     && mkdir build \
     && cd build \
@@ -60,10 +62,20 @@ RUN git clone https://github.com/RainerKuemmerle/g2o.git \
     && ninja install
 
 # Install Sophus
-RUN git clone https://github.com/strasdat/Sophus.git\
+RUN git clone --branch v22.04.1 --single-branch https://github.com/strasdat/Sophus.git \
     && cd Sophus \
     && mkdir build \
     && cd build \
+    && cmake -D CMAKE_BUILD_TYPE=Release -GNinja ../ \
+    && ninja \
+    && ninja install
+
+# Install Ceres
+RUN git clone --branch 2.1.0 --single-branch https://github.com/ceres-solver/ceres-solver \
+    && cd ceres-solver \
+    && mkdir build \
+    && cd build \
+    && echo $PWD \
     && cmake -D CMAKE_BUILD_TYPE=Release -GNinja ../ \
     && ninja \
     && ninja install
@@ -72,7 +84,7 @@ RUN git clone https://github.com/strasdat/Sophus.git\
 WORKDIR /app
 
 # Clean up
-RUN apt-get clean \
+RUN apt clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 CMD bash 

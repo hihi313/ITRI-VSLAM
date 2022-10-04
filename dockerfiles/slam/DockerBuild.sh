@@ -26,7 +26,7 @@ do
         START="$(TZ=UTC0 printf '%(%s)T\n' '-1')" # `-1`  is the current time
         
         docker rmi $IMG_NAME
-        docker build $CACHE -t $IMG_NAME:$IMG_TAG
+        docker build $CACHE -t $IMG_NAME:$IMG_TAG .
         
         # Pring elapsed time
         ELAPSED=$(( $(TZ=UTC0 printf '%(%s)T\n' '-1') - START ))
