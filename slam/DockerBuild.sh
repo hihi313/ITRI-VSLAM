@@ -7,8 +7,7 @@ IMG_TAG="latest"
 CTNR_NAME="slam_ctnr"
 WORKDIR="/app" # Should be the same as Dockerfile
 
-GPU=""
-while getopts "i:t:b:gr:e" opt; do
+while getopts "i:t:b:r:e" opt; do
     case $opt in
     i)
         IMG_NAME="$OPTARG"
@@ -31,14 +30,18 @@ while getopts "i:t:b:gr:e" opt; do
         ELAPSED=$(($(TZ=UTC0 printf '%(%s)T\n' '-1') - START))
         TZ=UTC0 printf 'Build duration=%(%H:%M:%S)T\n' "$ELAPSED"
         ;;
-    g)
-        GPU="--gpus all"
-        ;;
     r)
-        if [ "$OPTARG" == "m" ]; then
+        RM=""
+        GPU=""
+        DISPLAY_ARG="--volume=/tmp/.X11-unix:/tmp/.X11-unix:rw -e DISPLAY=$DISPLAY"
+        if [[ $OPTARG == *"m"* ]]; then
             RM="--rm"
-        else
-            RM=""
+        fi
+        if [[ $OPTARG == *"g"* ]]; then
+            GPU="--gpus all"
+        fi
+        if [[ $OPTARG == *"d"* ]]; then
+            DISPLAY_ARG="-e DISPLAY=host.docker.internal:0"
         fi
         # Enable tracing
         set -x
@@ -46,22 +49,21 @@ while getopts "i:t:b:gr:e" opt; do
         # --mount type=bind,src="",dst="" \
         # --user="$(id -u):$(id -g)" \
 
-        sudo xhost +local:root
-        docker run --privileged \
-            $RM \
-            $GPU \
-            -it \
-            --ipc=host \
-            -p 8087:8087 \
-            -e DISPLAY="host.docker.internal:0" \
-            -e QT_X11_NO_MITSHM=1 \
-            -v /dev:/dev:ro \
-            --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
-            --mount type=volume,src="vscode-extensions",dst="/root/.vscode-server/extensions" \
-            --volume="$PWD:$WORKDIR" \
-            --workdir $WORKDIR \
-            --name $CTNR_NAME \
-            "$IMG_NAME:$IMG_TAG"
+        sudo xhost +local:root &&
+            docker run --privileged \
+                $RM \
+                $GPU \
+                $DISPLAY_ARG \
+                -it \
+                --ipc=host \
+                -p 8087:8087 \
+                -e QT_X11_NO_MITSHM=1 \
+                -v /dev:/dev:ro \
+                --mount type=volume,src="vscode-extensions",dst="/root/.vscode-server/extensions" \
+                --volume="$PWD:$WORKDIR" \
+                --workdir $WORKDIR \
+                --name $CTNR_NAME \
+                "$IMG_NAME:$IMG_TAG"
 
         # Disable tracing
         set +x
