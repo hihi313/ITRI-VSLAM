@@ -33,7 +33,8 @@ while getopts "i:t:b:r:e" opt; do
     r)
         RM=""
         GPU=""
-        DISPLAY_ARG="--volume=/tmp/.X11-unix:/tmp/.X11-unix:rw -e DISPLAY=$DISPLAY"
+        DISPLAY_ENV="DISPLAY=$DISPLAY"
+        DISPLAY_VOLUME="--volume=/tmp/.X11-unix:/tmp/.X11-unix:rw"
         if [[ $OPTARG == *"m"* ]]; then
             RM="--rm"
         fi
@@ -41,7 +42,8 @@ while getopts "i:t:b:r:e" opt; do
             GPU="--gpus all"
         fi
         if [[ $OPTARG == *"d"* ]]; then
-            DISPLAY_ARG="-e DISPLAY=host.docker.internal:0"
+            DISPLAY_ENV="DISPLAY=host.docker.internal:0"
+            DISPLAY_VOLUME=""
         fi
         # Enable tracing
         set -x
@@ -50,15 +52,14 @@ while getopts "i:t:b:r:e" opt; do
         # --user="$(id -u):$(id -g)" \
 
         sudo xhost +local:root &&
-            docker run --privileged \
-                $RM \
-                $GPU \
-                $DISPLAY_ARG \
-                -it \
-                --ipc=host \
-                -p 8087:8087 \
+            docker run -it $RM $GPU $DISPLAY_VOLUME \
                 -e QT_X11_NO_MITSHM=1 \
+                -p 8087:8087 \
                 -v /dev:/dev:ro \
+                --privileged \
+                --init \
+                --ipc=host \
+                --env="$DISPLAY_ENV" \
                 --mount type=volume,src="vscode-extensions",dst="/root/.vscode-server/extensions" \
                 --volume="$PWD:$WORKDIR" \
                 --workdir $WORKDIR \
