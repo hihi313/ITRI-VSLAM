@@ -54,7 +54,7 @@ while getopts "i:t:b:r:e" opt; do
         sudo xhost +local:root &&
             docker run -it $RM $GPU $DISPLAY_VOLUME \
                 -e QT_X11_NO_MITSHM=1 \
-                -p 8087:8087 \
+                -p 8088:8088 \
                 -v /dev:/dev:ro \
                 --privileged \
                 --init \

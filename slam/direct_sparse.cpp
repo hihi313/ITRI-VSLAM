@@ -284,5 +284,22 @@ bool poseEstimationDirect(const vector<Measurement> &measurements, cv::Mat *gray
     optimizer.optimize(30);
     Tcw = pose->estimate();
 
+    // Print inlier info
+    int nOutlier, nInlier;
+    nOutlier = nInlier = 0;
+    for (g2o::HyperGraph::Edge* edge : optimizer.edges())
+    {
+        EdgeSE3ProjectDirect *e = (EdgeSE3ProjectDirect *)edge;
+        if (e->level()) // 1, outlier
+        {
+            nOutlier++;
+        }
+        else
+        {
+            nInlier++;
+        }
+    }
+    printf("#Inlier=%d,\t#Outlier=%d\n", nInlier, nOutlier);
+
     return true;
 }
